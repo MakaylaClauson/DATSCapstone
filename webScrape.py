@@ -6,13 +6,14 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from time import sleep
 
 ##URLS for each webpage
-URLS = ["https://www.pgatour.com/stats/detail/02428"]
+URLS = ["https://www.pgatour.com/stats/detail/02428","https://www.pgatour.com/stats/detail/102"]
 ##Class ID for the data needing to be scraped 
 ID = ["chakra-text css-dzv7ky","chakra-text css-1osk6s4","chakra-text css-138etjk"]
 TS = ["TOUR Championship"]
-YS = ["2021-2022"]
+YS = ["2022-2023","2021-2022","2020-2021","2019-2020","2018-2019","2017-2018","2016-2017","2015-2016","2014-2015","2013-2014"]
 data = pd.DataFrame(columns = ["Year", "Tournament", "Name"])
 
 def safe_text(element):
@@ -28,7 +29,9 @@ def dataset(t,tour, y,sn):
     if data.empty != True:
         if data.isin([tour]).any().any():
             if data.isin([y]).any().any():
-                data[sn] = t[sn]
+                data = pd.merge(data, t, on=['Year','Tournament','Name'], how='inner')
+            else:
+                data = data.append(t,ignore_index=True)
         else:
             data = data.append(t,ignore_index=True)
     else:
@@ -46,22 +49,21 @@ def scrape():
         driver.execute_script("arguments[0].click();", p_element)
         to = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(), "Tournament Only")]')
         driver.execute_script("arguments[0].click();", to)
-        wait = WebDriverWait(driver, 30)
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Sep 17")]'))) 
+        sleep(5)
         for tournaments in TS:
             t = driver.find_element(By.XPATH, '//*[contains(text(), "Tournament")]')
             driver.execute_script("arguments[0].click();", t)
-            tn = o = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(),"TOUR Championship")]')
+            tpath = f'//button[@role="menuitem" and contains(text(),"{tournaments}")]'
+            tn = o = driver.find_element(By.XPATH, tpath)
             driver.execute_script("arguments[0].click();", tn)
-            wait = WebDriverWait(driver, 30)
-            wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Aug 27")]'))) 
+            sleep(5)
             for years in YS:
                 y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
                 driver.execute_script("arguments[0].click();", y)
-                sy = o = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(),"2021-2022")]')
+                xpath =  f'//button[@role="menuitem" and contains(text(), "{years}")]'
+                sy = o = driver.find_element(By.XPATH, xpath)
                 driver.execute_script("arguments[0].click();", sy)
-                wait = WebDriverWait(driver, 30)
-                wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Aug 28")]'))) 
+                sleep(5)
                 html = driver.page_source
                 soup = BeautifulSoup(html, 'html5lib')
                 year = soup.find('p',class_="chakra-text css-1l26nns").text.split('-')[1]
@@ -73,8 +75,12 @@ def scrape():
                 for players in players:
                     name = safe_text(players.find('span', class_="chakra-text css-1osk6s4"))
                     stat = safe_text(players.find('span', class_="chakra-text css-138etjk"))
+                    if stat == "":
+                        stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
                     row = {'Year': year, 'Tournament': tournament, 'Name': name, statName: stat}
                     temp = temp.append(row, ignore_index=True) 
                 dataset(temp,tournament, year,statName)
                
 scrape()
+print(data)
+data.to_excel("example.xlsx",index=False)
