@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from time import sleep
 
 ##URLS for each webpage
-URLS = ["https://www.pgatour.com/stats/detail/02428","https://www.pgatour.com/stats/detail/102"]
+URLS = ["https://www.pgatour.com/stats/detail/02428","https://www.pgatour.com/stats/detail/102","https://www.pgatour.com/stats/detail/101","https://www.pgatour.com/stats/detail/103","https://www.pgatour.com/stats/detail/331","https://www.pgatour.com/stats/detail/437","https://www.pgatour.com/stats/detail/130","https://www.pgatour.com/stats/detail/438","https://www.pgatour.com/stats/detail/120","https://www.pgatour.com/stats/detail/142","https://www.pgatour.com/stats/detail/143","https://www.pgatour.com/stats/detail/144"]
 ##Class ID for the data needing to be scraped 
 ID = ["chakra-text css-dzv7ky","chakra-text css-1osk6s4","chakra-text css-138etjk"]
 TS = ["TOUR Championship"]
@@ -57,6 +57,7 @@ def scrape():
             tn = o = driver.find_element(By.XPATH, tpath)
             driver.execute_script("arguments[0].click();", tn)
             sleep(5)
+            temp = pd.DataFrame(columns = ["Year", "Tournament", "Name"]) 
             for years in YS:
                 y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
                 driver.execute_script("arguments[0].click();", y)
@@ -71,7 +72,6 @@ def scrape():
                 statName = soup.find('h1', class_="chakra-text css-n9y8ye").text
                 tournament = soup.find_all('div',class_="css-bq4mok")
                 tournament = tournament[2].text.split("Tournament")[1]
-                temp = pd.DataFrame(columns = ["Year", "Tournament", "Name"]) 
                 for players in players:
                     name = safe_text(players.find('span', class_="chakra-text css-1osk6s4"))
                     stat = safe_text(players.find('span', class_="chakra-text css-138etjk"))
@@ -79,7 +79,7 @@ def scrape():
                         stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
                     row = {'Year': year, 'Tournament': tournament, 'Name': name, statName: stat}
                     temp = temp.append(row, ignore_index=True) 
-                dataset(temp,tournament, year,statName)
+            dataset(temp,tournament, year,statName)
                
 scrape()
 print(data)
