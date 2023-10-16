@@ -11,7 +11,8 @@ from time import sleep
 
 ##URLS for each webpage
 URLS = ["https://www.pgatour.com/stats/detail/02428"
-        ,"https://www.pgatour.com/stats/detail/102","https://www.pgatour.com/stats/detail/101"
+        ,"https://www.pgatour.com/stats/detail/102"
+        ,"https://www.pgatour.com/stats/detail/101"
         ,"https://www.pgatour.com/stats/detail/103","https://www.pgatour.com/stats/detail/331",
         "https://www.pgatour.com/stats/detail/437","https://www.pgatour.com/stats/detail/130",
         "https://www.pgatour.com/stats/detail/438","https://www.pgatour.com/stats/detail/120",
@@ -31,7 +32,8 @@ TS = ["TOUR Championship","BMW Championship","Sanderson Farms Championship",
       "WM Phoenix Open", "AT&T Pebble Beach ", "Farmers Insurance Open", "The American Express", 
       "Sony Open in Hawaii", "Sentry Tournament of Champions", "THE CJ CUP in South Carolina", "ZOZO CHAMPIONSHIP"
       , "The RSM Classic", "Cadence Bank Houston Open","World Wide Technology Championship","Butterfield Bermuda Championship"]
-YS = ["2022-2023","2021-2022","2020-2021","2019-2020","2018-2019","2017-2018","2016-2017"
+YS = ["2022-2023","2021-2022"
+      ,"2020-2021","2019-2020","2018-2019","2017-2018","2016-2017"
       ,"2015-2016","2014-2015","2013-2014"]
 data = pd.DataFrame(columns = ["Year", "Tournament", "Name"])
 
@@ -52,6 +54,7 @@ def dataset(t,tour, y,sn):
     global data
     t = t[(t['Name'] != '')]
     t = t.reset_index(drop=True)
+    t[sn] = t[sn].str.replace('%', '', regex=False)
     if data.empty != True:
         if data.isin([tour]).any().any():
             if data.isin([y]).any().any():
@@ -76,8 +79,8 @@ def scrape():
         to = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(), "Tournament Only")]')
         driver.execute_script("arguments[0].click();", to)
         sleep(5)
+        temp = pd.DataFrame(columns = ["Year", "Tournament", "Name"]) 
         for tournaments in TS:
-            temp = pd.DataFrame(columns = ["Year", "Tournament", "Name"]) 
             for years in YS:
                 y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
                 driver.execute_script("arguments[0].click();", y)
@@ -108,9 +111,11 @@ def scrape():
                         stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
                     row = {'Year': year, 'Tournament': tournament, 'Name': name, statName: stat}
                     temp = temp.append(row, ignore_index=True) 
-            dataset(temp,tournament, year,statName)
-            print(temp)
-               
+        dataset(temp,tournament, year,statName)
+           
+
 scrape()
 print(data)
 data.to_excel("example.xlsx",index=False)
+
+#Create tamp table for each statistic merge once code finished running
