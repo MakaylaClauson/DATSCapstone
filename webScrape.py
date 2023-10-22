@@ -30,7 +30,7 @@ TS = ["TOUR Championship","BMW Championship","Sanderson Farms Championship",
       , "Valspar Championship","THE PLAYERS Championship", "Puerto Rico Open"
       ,"Arnold Palmer Invitational ", "The Honda Classic", "The Genesis Invitational",
       "WM Phoenix Open", "AT&T Pebble Beach ", "Farmers Insurance Open", "The American Express", 
-      "Sony Open in Hawaii", "Sentry Tournament of Champions", "THE CJ CUP in South Carolina", "ZOZO CHAMPIONSHIP"
+     "Sony Open in Hawaii", "Sentry Tournament of Champions", "THE CJ CUP in South Carolina", "ZOZO CHAMPIONSHIP"
       , "The RSM Classic", "Cadence Bank Houston Open","World Wide Technology Championship","Butterfield Bermuda Championship"]
 YS = ["2022-2023","2021-2022"
       ,"2020-2021","2019-2020","2018-2019","2017-2018","2016-2017"
@@ -85,13 +85,14 @@ def scrape():
                 y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
                 driver.execute_script("arguments[0].click();", y)
                 xpath =  f'//button[@role="menuitem" and contains(text(), "{years}")]'
-                sy = o = driver.find_element(By.XPATH, xpath)
+                sy = o = find_element_safely(driver, By.XPATH, xpath)
+                if sy == False:
+                    continue 
                 driver.execute_script("arguments[0].click();", sy)
                 sleep(5)
                 t = driver.find_element(By.XPATH, '//*[contains(text(), "Tournament")]')
                 driver.execute_script("arguments[0].click();", t)
                 tpath = f'//button[@role="menuitem" and contains(text(),"{tournaments}")]'
-                #tn = o = driver.find_element(By.XPATH, tpath)
                 tn = find_element_safely(driver, By.XPATH, tpath)
                 if tn == False:
                     continue 
@@ -99,23 +100,68 @@ def scrape():
                 sleep(5)
                 html = driver.page_source
                 soup = BeautifulSoup(html, 'html5lib')
-                year = soup.find('p',class_="chakra-text css-1l26nns").text.split('-')[1]
-                players = soup.find('tbody', class_= "css-0").find_all('tr')
-                statName = soup.find('h1', class_="chakra-text css-n9y8ye").text
+                year = safe_text(soup.find('p',class_="chakra-text css-1l26nns"))
+                if year != "":
+                    year = year.split('-')[1]
+                else:
+                    continue
+                players = safe_text(soup.find('tbody', class_= "css-0"))
+                if players != "":
+                    soup.find('tbody', class_= "css-0").find_all('tr')
+                else:
+                    continue 
+                statName = safe_text(soup.find('h1', class_="chakra-text css-n9y8ye"))
                 tournament = soup.find_all('div',class_="css-bq4mok")
-                tournament = tournament[2].text.split("Tournament")[1]
+                tournament = safe_text(tournament[2])
+                if tournament != "":
+                    tournament = tournament.split("Tournament")[1]
+                else:
+                    continue
                 for players in players:
                     name = safe_text(players.find('span', class_="chakra-text css-1osk6s4"))
                     stat = safe_text(players.find('span', class_="chakra-text css-138etjk"))
                     if stat == "":
                         stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
+                        if stat == "":
+                            stat = safe_text(players.find('span', class_="chakra-text css-yiy6zj"))
                     row = {'Year': year, 'Tournament': tournament, 'Name': name, statName: stat}
                     temp = temp.append(row, ignore_index=True) 
         dataset(temp,tournament, year,statName)
-           
+def courseScrape():
+    global data
+    driver = webdriver.Chrome()
+    driver.get("https://www.pgatour.com/schedule")
+    #Toggle Button for Tournament Only
+    p_element = driver.find_element(By.XPATH, '//*[contains(text(), "View")]')
+    driver.execute_script("arguments[0].click();", p_element)
+    to = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(), "Full Schedule")]')
+    driver.execute_script("arguments[0].click();", to)
+    sleep(5) 
+    temp2 = pd.DataFrame(columns = ["Year","Tournament", "Course"]) 
+    for years in YS:
+        y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
+        driver.execute_script("arguments[0].click();", y)
+        xpath =  f'//button[@role="menuitem" and contains(text(), "{years}")]'
+        sy = o = find_element_safely(driver, By.XPATH, xpath)
+        if sy == False:
+            continue 
+        driver.execute_script("arguments[0].click();", sy)
+        sleep(30)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html5lib')
+        year = safe_text(soup.find('p',class_="chakra-text css-1l26nns"))
+        if year != "":
+            year = year.split('-')[1]
+        courses = soup.find_all('div', class_= "css-j7qwjs")
+        for course in courses:
+            tournament = safe_text(course.find('p', class_="chakra-text css-vgdvwe"))
+            course = safe_text(course.find('p', class_="chakra-text css-16dpohb"))
+            row = {'Year': year, 'Tournament': tournament, 'Course': course}
+            temp2 = temp2.append(row, ignore_index=True) 
+        print(temp2)
+    data = pd.merge(data, temp2, on=['Year','Tournament'], how='left')
 
 scrape()
+courseScrape()
 print(data)
-data.to_excel("example.xlsx",index=False)
-
-#Create tamp table for each statistic merge once code finished running
+data.to_excel("pgadata.xlsx",index=False)
