@@ -10,7 +10,7 @@ def score_graph(tournament):
     filtered_df = df[df['Tournament'] == tournament]
     golfer_counts = filtered_df['Name'].value_counts()
     print(golfer_counts)
-    selected_golfers = golfer_counts[golfer_counts >= 15].index
+    selected_golfers = golfer_counts[golfer_counts >= 5].index
     print(selected_golfers)
     filtered_df = filtered_df[filtered_df['Name'].isin(selected_golfers)]
     print(filtered_df)
