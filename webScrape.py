@@ -6,16 +6,20 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+from time import sleep
 
 ##URLS for each webpage
-URLS = ["https://www.pgatour.com/stats/detail/02428"]
+URLS = ["https://www.pgatour.com/stats/detail/02428"
+        ,"https://www.pgatour.com/stats/detail/102"
+        ,"https://www.pgatour.com/stats/detail/101"
+        ,"https://www.pgatour.com/stats/detail/103","https://www.pgatour.com/stats/detail/331",
+        "https://www.pgatour.com/stats/detail/437","https://www.pgatour.com/stats/detail/130",
+        "https://www.pgatour.com/stats/detail/438","https://www.pgatour.com/stats/detail/120",
+        "https://www.pgatour.com/stats/detail/142","https://www.pgatour.com/stats/detail/143",
+        "https://www.pgatour.com/stats/detail/144"]
 ##Class ID for the data needing to be scraped 
 ID = ["chakra-text css-dzv7ky","chakra-text css-1osk6s4","chakra-text css-138etjk"]
-<<<<<<< Updated upstream
-TS = ["TOUR Championship"]
-YS = ["2021-2022"]
-for x in URLS:
-=======
 TS = ["TOUR Championship","BMW Championship","Sanderson Farms Championship",
       "Fortinet Championship","FedEx St. Jude Championship","Wyndham Championship",
       "3M Open","The Open Championship","Genesis Scottish Open","Barbasol Championship",
@@ -85,7 +89,7 @@ def scrape():
                 if sy == False:
                     continue 
                 driver.execute_script("arguments[0].click();", sy)
-                sleep(10)
+                sleep(5)
                 t = driver.find_element(By.XPATH, '//*[contains(text(), "Tournament")]')
                 driver.execute_script("arguments[0].click();", t)
                 tpath = f'//button[@role="menuitem" and contains(text(),"{tournaments}")]'
@@ -93,7 +97,7 @@ def scrape():
                 if tn == False:
                     continue 
                 driver.execute_script("arguments[0].click();", tn)
-                sleep(10)
+                sleep(5)
                 html = driver.page_source
                 soup = BeautifulSoup(html, 'html5lib')
                 year = safe_text(soup.find('p',class_="chakra-text css-1l26nns"))
@@ -125,51 +129,13 @@ def scrape():
         dataset(temp,tournament, year,statName)
 def courseScrape():
     global data
->>>>>>> Stashed changes
     driver = webdriver.Chrome()
-    driver.get(x)
+    driver.get("https://www.pgatour.com/schedule")
     #Toggle Button for Tournament Only
-    p_element = driver.find_element(By.XPATH, '//*[contains(text(), "Time Period")]')
+    p_element = driver.find_element(By.XPATH, '//*[contains(text(), "View")]')
     driver.execute_script("arguments[0].click();", p_element)
-    to = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(), "Tournament Only")]')
+    to = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(), "Full Schedule")]')
     driver.execute_script("arguments[0].click();", to)
-<<<<<<< Updated upstream
-    wait = WebDriverWait(driver, 30)
-    wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Sep 17")]'))) 
-    for tournaments in TS:
-        t = driver.find_element(By.XPATH, '//*[contains(text(), "Tournament")]')
-        driver.execute_script("arguments[0].click();", t)
-        tn = o = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(),"TOUR Championship")]')
-        driver.execute_script("arguments[0].click();", tn)
-        wait = WebDriverWait(driver, 30)
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Aug 27")]'))) 
-        for years in YS:
-            y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
-            driver.execute_script("arguments[0].click();", y)
-            sy = o = driver.find_element(By.XPATH, '//button[@role="menuitem" and contains(text(),"2021-2022")]')
-            driver.execute_script("arguments[0].click();", sy)
-            wait = WebDriverWait(driver, 30)
-            wait.until(EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "Aug 28")]'))) 
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html5lib')
-            year = soup.find('p',class_="chakra-text css-1l26nns").text.split('-')[1]
-            players = soup.find('tbody', class_= "css-0").find_all('tr')
-            statName = soup.find('h1', class_="chakra-text css-n9y8ye").text
-            tournament = soup.find_all('div',class_="css-bq4mok")
-            tournament = tournament[2].text.split("Tournament")[1]
-            excel = openpyxl.Workbook()
-            sheet = excel.active
-            sheet.append(["Year","Tournament","Name",statName])
-            for players in players:
-        #What to do with blank rows that break the code 
-                print(players)
-                name = players.find('span', class_="chakra-text css-1osk6s4").text
-                stat = players.find('span', class_="chakra-text css-138etjk").text
-                sheet.append([year,tournament, name, stat])
-                excel.save(tournament+year+statName+'.csv')
-
-
-=======
     sleep(5) 
     temp2 = pd.DataFrame(columns = ["Year","Tournament", "Course"]) 
     for years in YS:
@@ -193,11 +159,9 @@ def courseScrape():
             row = {'Year': year, 'Tournament': tournament, 'Course': course}
             temp2 = temp2.append(row, ignore_index=True) 
         print(temp2)
-    temp2.to_excel("coursespga.xlsx",index=False)
     data = pd.merge(data, temp2, on=['Year','Tournament'], how='left')
 
 scrape()
 courseScrape()
 print(data)
-data.to_excel("pgadata2.xlsx",index=False)
->>>>>>> Stashed changes
+data.to_excel("pgadata.xlsx",index=False)
