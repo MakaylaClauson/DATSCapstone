@@ -107,7 +107,7 @@ def scrape():
                     continue
                 players = safe_text(soup.find('tbody', class_= "css-0"))
                 if players != "":
-                    soup.find('tbody', class_= "css-0").find_all('tr')
+                    players = soup.find('tbody', class_= "css-0").find_all('tr')
                 else:
                     continue 
                 statName = safe_text(soup.find('h1', class_="chakra-text css-n9y8ye"))
@@ -118,7 +118,7 @@ def scrape():
                 else:
                     continue
                 for players in players:
-                    name = safe_text(players.find('span', class_="chakra-text css-1osk6s4"))
+                    name = safe_text(players.find('span',class_="chakra-text css-1osk6s4"))
                     stat = safe_text(players.find('span', class_="chakra-text css-138etjk"))
                     if stat == "":
                         stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
