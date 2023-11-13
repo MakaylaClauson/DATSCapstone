@@ -1,12 +1,17 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.metrics import mean_squared_error, r2_score, accuracy_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, plot_tree
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
 
 scores = pd.read_excel('dataset2.xlsx')
 courseSchedule = pd.read_excel('courseSchedule.xlsx')
-courseData = pd.read_csv('CourseTable.csv')
+#courseData = pd.read_csv('CourseTable.csv')
+#Need to subset by course to find average score per  par 3,4,5 
+holeData = pd.read_excel('HoleData.xlsx')
+#Join Course Data all together
+courseData = pd.read_excel("course_attributes.xlsx")
 
 #Merge Course Data and Schedule
 course = pd.merge(courseSchedule, courseData, left_on='Course', right_on='COURSE')
@@ -58,6 +63,10 @@ def indv_model(name):
     print("Predicted Values", X_test, y_pred)
     print(f"Mean Squared Error: {mse:.2f}")
     print(f"R-squared: {r2:.2f}")
+    #Display Model
+    plt.figure(figsize=(12, 8))
+    plot_tree(model, feature_names=X_train.columns, filled=True, rounded=True)
+    plt.show()
 
 #Label Encoding
 label_encoder = LabelEncoder()

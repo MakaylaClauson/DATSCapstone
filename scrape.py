@@ -28,8 +28,11 @@ TS = ["TOUR Championship","The Open Championship","U.S. Open",
 YS = ["2022-2023","2021-2022"
       ,"2020-2021","2019-2020","2018-2019","2017-2018","2016-2017"
       ,"2015-2016","2014-2015","2013-2014"]
+
 data = pd.DataFrame(columns = ["Year", "Tournament", "Name"])
 temp2 = pd.DataFrame(columns = ["Year","Tournament", "Course"]) 
+temp3 = pd.DataFrame()
+temp4 = pd.DataFrame()
 
 def safe_text(element):
     if element is not None:
@@ -154,8 +157,94 @@ def courseScrape():
             temp2 = temp2.append(row, ignore_index=True) 
         print(temp2)
 
+def course_attributes():
+    global temp3
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://www.pgatour.com/stats/course/toughest-course")
+    for years in YS:
+        y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
+        driver.execute_script("arguments[0].click();", y)
+        xpath =  f'//button[@role="menuitem" and contains(text(), "{years}")]'
+        sy = o = find_element_safely(driver, By.XPATH, xpath)
+        if sy == False:
+            continue 
+        driver.execute_script("arguments[0].click();", sy)
+        sleep(30)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html5lib')
+        year = safe_text(soup.find('p',class_="chakra-text css-1e5ks3"))
+        if year != "":
+            year = year.split('-')[1]
+        courses = soup.find('tbody', class_= "css-0")
+        rows = courses.find_all("tr")
+        d = []
+        for row in rows:
+            cells = row.find_all("td")
+            row_data = []
+            for cell in cells:
+                cell_text = cell.get_text().strip()
+                row_data.append(cell_text)
+            row_data.append(year)
+            d.append(row_data)
+        d2 = pd.DataFrame(d)
+        temp3 = temp3.append(d2,ignore_index=True)
+        print(temp3)
+    temp3 = temp3.drop([0, 5, 6, 7, 8, 9, 10, 11], axis=1)
+    column_numbers_to_rename = [0, 1, 2,3,4]
+    new_column_names = ['Course', 'Par', 'Yardage','AverageScore','Year']
+    temp3.columns = [new_column_names[i] if i in column_numbers_to_rename else col for i, col in enumerate(temp3.columns)]
+    temp3 = temp3.dropna()
+
+def holeavg():
+    global temp4
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://www.pgatour.com/stats/course/toughest-holes")
+    for years in YS:
+        y = driver.find_element(By.XPATH, '//*[contains(text(), "Season")]')
+        driver.execute_script("arguments[0].click();", y)
+        xpath =  f'//button[@role="menuitem" and contains(text(), "{years}")]'
+        sy = o = find_element_safely(driver, By.XPATH, xpath)
+        if sy == False:
+            continue 
+        driver.execute_script("arguments[0].click();", sy)
+        sleep(30)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html5lib')
+        year = safe_text(soup.find('p',class_="chakra-text css-1e5ks3"))
+        if year != "":
+            year = year.split('-')[1]
+        courses = soup.find('tbody', class_= "css-0")
+        rows = courses.find_all("tr")
+        d = []
+        for row in rows:
+            cells = row.find_all("td")
+            row_data = []
+            for cell in cells:
+                cell_text = cell.get_text().strip()
+                row_data.append(cell_text)
+            row_data.append(year)
+            d.append(row_data)
+        d2 = pd.DataFrame(d)
+        temp4 = temp4.append(d2,ignore_index=True)
+        print(temp4)
+    temp4 = temp4.drop([0, 12, 6, 7, 8, 9, 10, 11], axis=1)
+    column_numbers_to_rename = [0, 1, 2,3,4,5]
+    new_column_names = ['Course','Hole', 'Par', 'Yardage','AverageScore','Year']
+    temp4.columns = [new_column_names[i] if i in column_numbers_to_rename else col for i, col in enumerate(temp4.columns)]
+    temp4 = temp4.dropna()
+
 #scrape()
-courseScrape()
-print(data)
 #data.to_excel("dataset2.xlsx",index=False)
-temp2.to_excel("courseSchedule.xlsx",index=False)
+
+#courseScrape()
+#temp2.to_excel("courseSchedule.xlsx",index=False)
+
+#course_attributes()
+#temp3.to_excel("course_attributes.xlsx", index = False)
+
+#holeavg()
+#temp4.to_excel("HoleData.xlsx", index=False)
