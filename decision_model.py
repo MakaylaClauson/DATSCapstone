@@ -37,9 +37,31 @@ def convert_length(length_str):
         value=float(length_str)
     return value
 
+def indv_model(name):
+    print(name)
+    subset_df = scores[scores['Name'] == name]
+    print(subset_df)
+    features = subset_df[['Total Putting', 'Driving Accuracy Percentage', 'Driving Distance',
+               'Greens in Regulation Percentage', 'Proximity to Hole',
+               'Rough Proximity', 'Scrambling', 'Average Distance of Putts made',
+               'Par 3 Scoring Average', 'Par 4 Scoring Average', 'Par 5 Scoring Average']]
+    target = subset_df['Scoring Average']
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+    # Create a decision tree classifier and train it
+    model = DecisionTreeRegressor()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    # Evaluate the model
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    print(f"Mean Squared Error: {mse:.2f}")
+    print(f"R-squared: {r2:.2f}")
+
 #Label Encoding
 label_encoder = LabelEncoder()
-scores['Name'] = label_encoder.fit_transform(scores['Name'])
+#scores['Name'] = label_encoder.fit_transform(scores['Name'])
+#scores['Tournament'] = label_encoder.fit_transform(scores['Tournament'])
 
 # Fit and transform the data
 scores = scores.dropna()
@@ -58,28 +80,6 @@ nan_count_per_column = scores.isna().sum()
 print("Number of NaN values per column:")
 print(nan_count_per_column)
 
-features = scores[['Total Putting', 'Driving Accuracy Percentage', 'Driving Distance',
-               'Greens in Regulation Percentage', 'Proximity to Hole',
-               'Rough Proximity', 'Scrambling', 'Average Distance of Putts made',
-               'Par 3 Scoring Average', 'Par 4 Scoring Average', 'Par 5 Scoring Average']]
-target = scores['Scoring Average']
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
-
-
-
-# Create a decision tree classifier and train it
-
-model = DecisionTreeRegressor()
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-
-# Evaluate the model
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-
-print(f"Mean Squared Error: {mse:.2f}")
-print(f"R-squared: {r2:.2f}")
+indv_model("Rory McIlroy")
 
 
