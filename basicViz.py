@@ -3,7 +3,7 @@ import seaborn as sns
 import requests, openpyxl
 import matplotlib.pyplot as plt
 
-#df = pd.read_excel('pgadata.xlsx')
+df = pd.read_excel('pgadata.xlsx')
 
 
 def score_graph(tournament):
@@ -23,7 +23,7 @@ def score_graph(tournament):
     #graph.fig.suptitle("Scoring Average Over Years by Tournament for Each Player")
     plt.show()
 
-#score_graph("U.S. Open")
+score_graph("U.S. Open")
 
 d = pd.read_csv("CourseTable.csv")
 
