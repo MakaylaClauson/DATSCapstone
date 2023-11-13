@@ -95,7 +95,7 @@ def scrape():
                 tpath = f'//button[@role="menuitem" and contains(text(),"{tournaments}")]'
                 tn = find_element_safely(driver, By.XPATH, tpath)
                 if tn == False:
-                    continue 
+                   continue 
                 driver.execute_script("arguments[0].click();", tn)
                 sleep(5)
                 html = driver.page_source
@@ -103,22 +103,21 @@ def scrape():
                 year = safe_text(soup.find('p',class_="chakra-text css-1l26nns"))
                 if year != "":
                     year = year.split('-')[1]
-                else:
-                    continue
+                print(year)
                 players = safe_text(soup.find('tbody', class_= "css-0"))
                 if players != "":
-                    players = soup.find('tbody', class_= "css-0").find_all('tr')
+                    soup.find('tbody', class_= "css-0").find_all('tr')
                 else:
                     continue 
                 statName = safe_text(soup.find('h1', class_="chakra-text css-n9y8ye"))
+                print(statName)
                 tournament = soup.find_all('div',class_="css-bq4mok")
                 tournament = safe_text(tournament[2])
+                print(tournament)
                 if tournament != "":
                     tournament = tournament.split("Tournament")[1]
-                else:
-                    continue
                 for players in players:
-                    name = safe_text(players.find('span',class_="chakra-text css-1osk6s4"))
+                    name = safe_text(players.find('span', class_="chakra-text css-1osk6s4"))
                     stat = safe_text(players.find('span', class_="chakra-text css-138etjk"))
                     if stat == "":
                         stat = safe_text(players.find('span', class_="chakra-text css-q5ejb6"))
