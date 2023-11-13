@@ -55,6 +55,7 @@ def indv_model(name):
     # Evaluate the model
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
+    print("Predicted Values", X_test, y_pred)
     print(f"Mean Squared Error: {mse:.2f}")
     print(f"R-squared: {r2:.2f}")
 
