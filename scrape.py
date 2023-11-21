@@ -23,8 +23,18 @@ URLS = ["https://www.pgatour.com/stats/detail/02428"
         "https://www.pgatour.com/stats/detail/144"]
 ##Class ID for the data needing to be scraped 
 ID = ["chakra-text css-dzv7ky","chakra-text css-1osk6s4","chakra-text css-138etjk"]
-TS = ["TOUR Championship","The Open Championship","U.S. Open", 
-      "PGA Championship","Masters Tournament","THE PLAYERS Championship"]
+TS = ["TOUR Championship","BMW Championship","Sanderson Farms Championship",
+      "Fortinet Championship","FedEx St. Jude Championship","Wyndham Championship",
+      "3M Open","The Open Championship","Genesis Scottish Open","Barbasol Championship",
+      "John Deere Classic,Rocket Mortgage Classic","Travelers Championship","U.S. Open", 
+      "RBC Canadian Open", "the Memorial Tournament", "Charles Schwab Challenge", 
+      "PGA Championship", "AT&T Byron Nelson","Wells Fargo Championship","Mexico Open "
+      ,"RBC Heritage","Masters Tournament","Valero Texas Open", "Corales Puntacana Championship"
+      , "Valspar Championship","THE PLAYERS Championship", "Puerto Rico Open"
+      ,"Arnold Palmer Invitational ", "The Honda Classic", "The Genesis Invitational",
+      "WM Phoenix Open", "AT&T Pebble Beach ", "Farmers Insurance Open", "The American Express", 
+     "Sony Open in Hawaii", "Sentry Tournament of Champions", "THE CJ CUP in South Carolina", "ZOZO CHAMPIONSHIP"
+      , "The RSM Classic", "Cadence Bank Houston Open","World Wide Technology Championship","Butterfield Bermuda Championship"]
 YS = ["2022-2023","2021-2022"
       ,"2020-2021","2019-2020","2018-2019","2017-2018","2016-2017"
       ,"2015-2016","2014-2015","2013-2014"]
@@ -146,8 +156,6 @@ def courseScrape():
         html = driver.page_source
         soup = BeautifulSoup(html, 'html5lib')
         year = safe_text(soup.find('p',class_="chakra-text css-1l26nns"))
-        if year != "":
-            year = year.split('-')[1]
         courses = soup.find_all('div', class_= "css-j7qwjs")
         for course in courses:
             tournament = safe_text(course.find('p', class_="chakra-text css-vgdvwe"))
@@ -242,9 +250,14 @@ def holeavg():
 
 #courseScrape()
 #temp2.to_excel("courseSchedule.xlsx",index=False)
+courseScrape()
+temp2.to_excel("courseSchedule2.xlsx",index=False)
 
 #course_attributes()
 #temp3.to_excel("course_attributes.xlsx", index = False)
 
 #holeavg()
 #temp4.to_excel("HoleData.xlsx", index=False)
+
+#scrape()
+#data.to_excel("bigdataset.xlsx",index=False)
