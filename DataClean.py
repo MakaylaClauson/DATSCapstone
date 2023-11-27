@@ -95,5 +95,7 @@ scores[['Total Putting', 'Driving Accuracy Percentage', 'Driving Distance',
                'Par 3 Scoring Average', 'Par 4 Scoring Average', 'Par 5 Scoring Average']].apply(pd.to_numeric, errors='coerce')
 numeric_columns = scores.select_dtypes(include = ["number", "integer","float"]).columns
 scores[numeric_columns] = numerical_pipe.fit_transform(scores[numeric_columns])
-
+print(scores.columns)
+if 'Unnamed: 0' in scores.columns:
+    scores = scores.drop('Unnamed: 0', axis=1)
 scores.to_excel("CleanedData.xlsx")
